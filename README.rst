@@ -46,7 +46,7 @@ The package is compatible with Python 2 and Python 3. It relies on the `dateutil
 Using Epoch Days from Terminal
 -------------------------------
 
-Linux users can also use the following bash functions directly from the terminal to compute epoch days.
+Linux users who use use `zsh <https://ohmyz.sh/>`_ can also use the following bash functions directly from the terminal to compute epoch days.
 
 .. code-block:: bash
 
