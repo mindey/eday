@@ -1,3 +1,8 @@
+"""
+Module providing functions for handling epoch days.
+
+This module includes functions for converting between dates and epoch days.
+"""
 import datetime
 import sys
 
@@ -8,20 +13,29 @@ if sys.version_info[0] < 3:
     from dateutil.tz import tzutc
     from dateutil import parser
 
-    # Define custom _timestamp() function for Python 2
-    def _timestamp(date):
-        """
-        Calculates the timestamp from a datetime object.
 
-        Parameters:
-        date (datetime.datetime): The datetime object.
+def _timestamp(date):
+    """
+    Calculates the timestamp from a datetime object.
 
-        Returns:
-        float: The timestamp.
-        """
+    Parameters:
+    date (datetime.datetime): The datetime object.
+
+    Returns:
+    float: The timestamp.
+    """
+    if sys.version_info[0] < 3:
         epoch = datetime.datetime(1970, 1, 1, tzinfo=tzutc())
-        time_delta = date - epoch
-        return time_delta.total_seconds()
+        delta = date - epoch
+        return delta.total_seconds()
+
+    if sys.platform == 'win32':
+        if date < datetime.datetime(1970, 1, 2, tzinfo=datetime.timezone.utc):
+            epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+            delta = date - epoch
+            return delta.total_seconds()
+
+    return date.timestamp()
 
 def from_date(date):
     """
@@ -35,20 +49,17 @@ def from_date(date):
     """
     if isinstance(date, str):
         if sys.version_info[0] < 3:
-            # Parse ISO format string with timezone information using dateutil.parser for Python 2
             date = parser.parse(date)
         else:
             date = datetime.datetime.fromisoformat(date)
 
-    if sys.version_info[0] < 3:
-        # Use custom _timestamp() function for Python 2
-
-        if date.tzinfo is None:
+    if date.tzinfo is None:
+        if sys.version_info[0] < 3:
             date = date.replace(tzinfo=tzutc())
+        else:
+            date = date.replace(tzinfo=datetime.timezone.utc)
 
-        return _timestamp(date) / SECONDS_IN_DAY
-
-    return date.timestamp() / SECONDS_IN_DAY
+    return _timestamp(date) / SECONDS_IN_DAY
 
 def to_date(eday):
     """
@@ -63,12 +74,21 @@ def to_date(eday):
     if any(isinstance(eday, type) for type in [str, int, float]):
         eday = float(eday)
 
+    seconds = eday * SECONDS_IN_DAY
+
+    if sys.platform == 'win32' and seconds < -43200.0:
+        # Handle the OSError for invalid argument on Windows for timestamps less than -43200.0
+        if sys.version_info[0] < 3:
+            epoch = datetime.datetime(1970, 1, 1, tzinfo=tzutc())
+        else:
+            epoch = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+        return epoch + datetime.timedelta(seconds=seconds)
+
     if sys.version_info[0] < 3:
-        # Convert to UTC using UTC class for Python 2
-        return datetime.datetime.utcfromtimestamp(eday * SECONDS_IN_DAY).replace(
+        return datetime.datetime.utcfromtimestamp(seconds).replace(
             tzinfo=tzutc())
 
-    return datetime.datetime.utcfromtimestamp(eday * SECONDS_IN_DAY).replace(
+    return datetime.datetime.utcfromtimestamp(seconds).replace(
         tzinfo=datetime.timezone.utc)
 
 def now():

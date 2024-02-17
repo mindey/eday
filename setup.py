@@ -1,17 +1,12 @@
 import sys
 from setuptools import setup, find_packages
 
-install_requires = []
-
-if sys.version_info[0] < 3:
-    install_requires.append('python-dateutil==2.7.0')
-
 with open('README.rst', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
     name='eday',
-    version='1.0.0',
+    version='1.0.1',
     description='A package for converting between dates and epoch days',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -35,6 +30,6 @@ setup(
     ],
     keywords='epoch days date time datetime conversion utility',
     packages=find_packages(),
-    install_requires=install_requires,
+    install_requires=['python-dateutil'],
     zip_safe=False,
 )
