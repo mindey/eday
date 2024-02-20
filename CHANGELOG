@@ -17,3 +17,8 @@ All notable changes to this project will be documented in this file.
 - [add] Ability to call eday as function (import eday; eday(<param>))
 - [add] The Eday class, inheriting from float, to be able to do math with big dates.
 - [add] _time_interval to render time intervals in commonly used units.
+
+## [1.0.3] - 2024-02-21
+- [remove] _time_interval to render time intervals in commonly used units.
+- [add] prepending dates with 'N' allows to get days from year 0001-01-01 as zero.
+- [remove] python-dateutil for Python3.

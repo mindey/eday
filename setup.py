@@ -6,12 +6,12 @@ with open('README.rst', 'r', encoding='utf-8') as f:
 
 setup(
     name='eday',
-    version='1.0.2',
+    version='1.0.3',
     description='A package for converting between dates and epoch days',
     long_description=long_description,
     long_description_content_type='text/x-rst',
     url='https://github.com/mindey/eday',
-    author='Your Name',
+    author='Mindey',
     author_email='mindey@mindey.com',
     license='MIT',
     classifiers=[
@@ -28,6 +28,6 @@ setup(
     ],
     keywords='epoch days date time datetime conversion utility',
     packages=find_packages(),
-    install_requires=['python-dateutil'],
+    install_requires=[],
     zip_safe=False,
 )

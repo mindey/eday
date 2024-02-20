@@ -65,7 +65,32 @@ The package presents a converter aliased to package, that inherits from `float`,
 
     # OR times:
 
-    eday('12:50') + eday('0:05')
+    eday('12:50') + eday('-0:05')
+
+Negative times
+---------------
+
+Reading minus symbol from ISOString or TimeString is supported, like so:
+
+.. code:: python
+
+    # If "-" is prepended, then days since 1970-01-01 get mirrored around 1970-01-01
+    eday('-2024-10-04')
+    # -20000.0 <1915-03-31 00:00:00+00:00>
+
+    # If "N" is added, then number of days since 0001-01-01 are returned.
+    eday('N2024-10-04')
+
+    # If "-" and "N' is added, then days sine 0001-01-01 get mirrored around 0001-01-01
+    eday('-N2024-10-04')
+
+    # You can also use "-" and "N" with times
+    eday('N12:50') + eday('-N0:05')
+
+Limitations
+-----------
+
+When using "N" prefix, negative days are mirrored, so B.C.E. seasons get inversed. This is something that in the future version we might fix, but it is not in the short term horizon.
 
 
 Compatibility

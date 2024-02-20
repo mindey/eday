@@ -42,24 +42,32 @@ def _time_to_date(arg):
     Handle times as if they were starting at 1970-01-01, if no years provided.
     """
 
+    negative = False
     if arg.startswith('-'):
         negative = True
         arg = arg[1:]
-    else:
-        negative = False
 
-    # If the input string is in ISO format, return it
-    if re.match(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$', arg):
-        return (arg, negative)  # If it's already in ISO format, return it as is
+    bce_zero = False  # Before common era.
+    if arg.startswith('N'):
+        arg = arg[1:]
+        bce_zero = True
+
+    try:
+        # If the input string is in ISO format, return it
+        datetime.datetime.fromisoformat(arg)
+        is_iso = True
+        return (arg, negative, is_iso, bce_zero)  # If it's already in ISO format, return it as is
+    except:
+        is_iso = False
 
     # If the input string ends with a time expression (HH:MM, HH:MM:SS, or HH:MM:SS.microseconds)
     if re.match(r'^\d{1,2}:\d{2}(:\d{2}(\.\d+)?)?$', arg):
         # Prepend '1970-01-01T' and append 'Z' to indicate Zulu time
         if arg.find(':') == 1:
             arg = '0' + arg
-        return (f'1970-01-01T{arg}+00:00', negative)
+        return (f'1970-01-01T{arg}+00:00', negative, is_iso, bce_zero)
 
-    return (arg, negative)
+    return (arg, negative, is_iso, bce_zero)
 
 def from_date(date):
     """
@@ -71,15 +79,17 @@ def from_date(date):
     Returns:
     float: The number of days since the epoch.
     """
+    negative = False
+    is_str = False
+    bce_zero = False
     if isinstance(date, str):
-        date, negative = _time_to_date(date)
+        is_str = True
+        date, negative, is_iso, bce_zero = _time_to_date(date)
 
         if sys.version_info[0] < 3:
             date = parser.parse(date)
         else:
             date = datetime.datetime.fromisoformat(date)
-    else:
-        negative = False
 
     if date.tzinfo is None:
         if sys.version_info[0] < 3:
@@ -88,8 +98,21 @@ def from_date(date):
             date = date.replace(tzinfo=datetime.timezone.utc)
 
     seconds = _timestamp(date) / SECONDS_IN_DAY
-    if negative:
-        return -seconds
+
+    if is_str:
+        if bce_zero:
+            # Treat 'Z' before date as if it's B.C.E. (Before Common Era), using 0001-01-01 as zero.
+            # zero = -719162.0 * 2
+            zero = 719162.0
+            seconds = zero + seconds
+
+        if negative:
+            # Treat "-" before date as if ti is B.E.E. (Before Epoch Era), using 1970-01-01 as zero.
+            zero = 0.
+            if bce_zero:
+                zero = -719162.0
+            return zero - seconds
+
     return seconds
 
 def to_date(eday):
@@ -135,50 +158,6 @@ def now():
     return from_date(datetime.datetime.utcnow())
 
 
-def _time_interval(value):
-    value = abs(value)
-    YEAR = 365.2425; MONTH = 30.436875; DAY = 1
-    HOUR = 1/24; MINUTE = 1/1440; SECOND = 1/86400
-
-    years = int(value / YEAR); value -= YEAR*years
-    months = int(value / MONTH); value -= MONTH*months
-    days = int(value / DAY); value -= DAY*days
-    hours = int(value / HOUR); value -= HOUR*hours
-    minutes = int(value / MINUTE); value -= MINUTE*minutes
-    seconds = value / SECOND; value -= SECOND*seconds
-
-    second, millis = ("%.12f" % round(seconds, 11)).split('.')
-
-    # Backpropagating
-    if second == '60':
-        minutes += 1
-        second = '0'
-        if minutes == 60:
-            hours += 1
-            minutes = 0
-            if hours == 24:
-                days += 1
-                hours = 0
-                if days == MONTH:
-                    months += 1
-                    days = 0
-                    if months == YEAR:
-                        years += 1
-                        months = 0
-
-    second = second.rjust(2,'0')
-
-    time_delta_str = ''
-    if years:
-        time_delta_str += '%d years ' % years
-    if months:
-        time_delta_str += '%d months ' % months
-    if days:
-        time_delta_str += '%d days ' % days
-    time_delta_str += "%02d:%02d:%s.%s" % (hours, minutes, second, millis)
-
-    return time_delta_str
-
 class EdayConverter(type):
     """
     Metaclass for Eday class.
@@ -207,10 +186,6 @@ class Eday(float, metaclass=EdayConverter):
     def now(cls):
         return now()
 
-    @classmethod
-    def time(cls, arg):
-        return _time_interval(arg)
-
     def __new__(cls, arg):
         if any(isinstance(arg, it) for it in [int, float]):
             day = float(arg)
@@ -228,11 +203,7 @@ class Eday(float, metaclass=EdayConverter):
         return obj
 
     def __repr__(self):
-        if self < 0:
-            minus = '-'
-        else:
-            minus = ''
-        return '%s (%s%s) <%s>' % (float(self), minus, self.time(self), self._converted_from)
+        return '%s <%s>' % (float(self), self._converted_from)
 
     def __add__(self, other):
         if isinstance(other, (int, float)):
