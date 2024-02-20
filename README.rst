@@ -29,19 +29,49 @@ Example usage:
 
     import eday
 
+    # Get the current UTC time in epoch days
+    eday.now()
+
     # Convert a date to epoch days
-    eday_value = eday.from_date('2022-02-17')
+    eday.from_date('1968-12-31')
 
     # Convert epoch days to a datetime object
-    datetime_obj = eday.to_date(eday_value)
+    eday.to_date(20000)
 
-    # Get the current UTC time in epoch days
-    current_time = eday.now()
+    # Use very large time days
+    eday(123812936129831283)
+
+
+Shorthands
+----------
+
+The package presents a converter aliased to package, that inherits from `float`, making the computations of date differences easier.
+
+.. code:: python
+
+    import eday
+
+    # Instantiate epoch days
+
+    eday('2024-10-04')
+
+    # OR
+
+    eday(20000)
+
+    # Subtract or add dates:
+
+    eday('2018-01-13 04:15+09:00') - eday('2022-02-17 15:45-07:00')
+
+    # OR times:
+
+    eday('12:50') + eday('0:05')
+
 
 Compatibility
 --------------
 
-The package is compatible with Python 2 and Python 3. It relies on the `dateutil` module for Python 2 compatibility when parsing ISO format strings.
+The package is compatible with Python 2 (up to version 1.0.1) and Python 3 (from version 1.0.2). Under Python2, it relies on the `dateutil` module for Python 2 compatibility when parsing ISO format strings.
 
 Using Epoch Days from Terminal
 -------------------------------

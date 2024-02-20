@@ -12,3 +12,8 @@ All notable changes to this project will be documented in this file.
 - [fix] Dates below 1970-01-02 fails to compute .timestamp() in Windows (win32) systems.
 - [fix] Fails installing python-dateutil in Python2.
 - [cleanup] remove eday/__init__.py.bak
+
+## [1.0.2] - 2024-02-20
+- [add] Ability to call eday as function (import eday; eday(<param>))
+- [add] The Eday class, inheriting from float, to be able to do math with big dates.
+- [add] _time_interval to render time intervals in commonly used units.
