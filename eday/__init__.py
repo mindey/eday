@@ -130,7 +130,7 @@ def to_date(eday):
 
     seconds = eday * SECONDS_IN_DAY
 
-    if sys.platform == 'win32' and seconds < -43200.0:
+    if sys.platform == 'win32' and ((seconds < -43200.0) or (seconds > 376583.91666666)):
         # Handle the OSError for invalid argument on Windows for timestamps less than -43200.0
         if sys.version_info[0] < 3:
             epoch = datetime.datetime(1970, 1, 1, tzinfo=tzutc())
