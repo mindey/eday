@@ -73,14 +73,13 @@ Reading minus symbol from ISOString or TimeString is supported, like so:
 .. code:: python
 
     # If "-" is prepended, then days since 1970-01-01 get mirrored around 1970-01-01
-    eday('-2024-10-04')
-    # -20000.0 <1915-03-31 00:00:00+00:00>
+    eday('-2024-10-04') # negative number of days in [1970-01-01, 2024-10-04]
 
     # If "N" is added, then number of days since 0001-01-01 are returned.
-    eday('N2024-10-04')
+    eday('N2024-10-04') # positive number of days in [0001-01-01, 2024-10-04]
 
     # If "-" and "N' is added, then days sine 0001-01-01 get mirrored around 0001-01-01
-    eday('-N2024-10-04')
+    eday('-N2024-10-04') # negative number of days in [-2024-10-04, 1970-01-01]
 
     # You can also use "-" and "N" with times
     eday('N12:50') + eday('-N0:05')
