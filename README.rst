@@ -28,12 +28,15 @@ Example usage:
 .. code:: python
 
     import eday
+    import datetime
+
+    date = datetime.datetime(1968, 12, 31)
 
     # Convert a date to epoch days
-    eday.from_date('1968-12-31')
+    eday.from_date(date) # float
 
     # Convert epoch days to a datetime object
-    eday.to_date(20000)
+    eday.to_date(20000) # datetime
 
     # Get the current UTC time in epoch days
     eday.now()
@@ -48,27 +51,26 @@ The package presents a converter aliased to package, that inherits from `float`,
 
     import eday
 
-    # Instantiate epoch days
+    # Create from Epoch days
+    eday(12345.67890)
 
-    eday('2024-10-04')
-    # OR
-    eday(20000)
-    # Use very large time days
-    eday(123812936129831283)
+    # Create from ISO dates
+    eday('2003-10-20 09:17:36.96-07:00')
 
     # Subtract or add dates:
-
     eday('2024-10-04') - eday.now()
-    # OR timezone-specific:
-    eday('2018-01-13 04:15+09:00') - eday('2022-02-17 15:45-07:00')
-    # OR times:
-    eday('25:50') + eday('-0:05')
-    # (25:50 translates into 1 day 1:50 AM)
 
-Negative times
----------------
+    # Create from number of hours, minutes, seconds
+    eday('198:30:15.445') # (translates as 198 hours, 30 minutes, 15.445 seconds)
 
-Reading minus symbol from ISOString or TimeString is supported, like so:
+    # Subtract or add times:
+    eday('25:50') + eday('-0:05')  # (25:50 translates into 25 hours 50 minutes)
+
+
+Negative times (experimental)
+-----------------------------
+
+Adding minus symbol ('-') and/or ('N') symbol to ISOString works currently like so:
 
 .. code:: python
 
@@ -81,8 +83,7 @@ Reading minus symbol from ISOString or TimeString is supported, like so:
     # If "-" and "N' is added, then days sine 0001-01-01 get mirrored around 0001-01-01
     eday('-N2024-10-04') # negative number of days in [-2024-10-04, 1970-01-01]
 
-    # You can also use "-" and "N" with times
-    eday('N12:50') + eday('-N0:05')
+However, this behavior is experimental, and may be updated in the future.
 
 Limitations
 -----------
