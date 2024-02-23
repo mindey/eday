@@ -29,17 +29,14 @@ Example usage:
 
     import eday
 
-    # Get the current UTC time in epoch days
-    eday.now()
-
     # Convert a date to epoch days
     eday.from_date('1968-12-31')
 
     # Convert epoch days to a datetime object
     eday.to_date(20000)
 
-    # Use very large time days
-    eday(123812936129831283)
+    # Get the current UTC time in epoch days
+    eday.now()
 
 
 Shorthands
@@ -54,17 +51,17 @@ The package presents a converter aliased to package, that inherits from `float`,
     # Instantiate epoch days
 
     eday('2024-10-04')
-
     # OR
-
     eday(20000)
+    # Use very large time days
+    eday(123812936129831283)
 
     # Subtract or add dates:
 
+    eday('2024-10-04') - eday.now()
+    # OR timezone-specific:
     eday('2018-01-13 04:15+09:00') - eday('2022-02-17 15:45-07:00')
-
     # OR times:
-
     eday('25:50') + eday('-0:05')
     # (25:50 translates into 1 day 1:50 AM)
 

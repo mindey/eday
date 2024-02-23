@@ -30,3 +30,6 @@ All notable changes to this project will be documented in this file.
 ## [1.0.5] - 2024-02-24
 - [remove] sys.version_info, Python2 conditionals.
 - [add] typing, Python3.
+
+## [1.0.6] - 2025-02-24
+- [misc] Make eday.now() to return Eday object instead of float.

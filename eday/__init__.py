@@ -76,15 +76,6 @@ def to_date(eday: Union[str, int, float]) -> datetime.datetime:
     return datetime.datetime.utcfromtimestamp(seconds).replace(
         tzinfo=datetime.timezone.utc)
 
-def now() -> float:
-    """
-    Returns the current UTC time as a number of days since the epoch.
-
-    Returns:
-    float: The number of days since the epoch representing the current UTC time.
-    """
-    return from_date(datetime.datetime.utcnow())
-
 
 class EdayConverter(type):
     """
@@ -154,3 +145,12 @@ class Eday(float, metaclass=EdayConverter):
             return Eday(float(self) - float(other))
         else:
             raise TypeError("Unsupported operand type for -")
+
+def now() -> Eday:
+    """
+    Returns the current UTC time as a number of days since the epoch.
+
+    Returns:
+    Eday: The number of days since the epoch representing the current UTC time.
+    """
+    return Eday(from_date(datetime.datetime.utcnow()))
