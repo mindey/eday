@@ -26,3 +26,7 @@ All notable changes to this project will be documented in this file.
 ## [1.0.4] - 2024-02-23
 - [add] Allow instantiating times +HH:MM:SS.ss+, even when HH>24, MM>60, SS>60.
   (useful for time interval computations between times specified beyond midnight.)
+
+## [1.0.5] - 2024-02-24
+- [remove] sys.version_info, Python2 conditionals.
+- [add] typing, Python3.
