@@ -65,7 +65,8 @@ The package presents a converter aliased to package, that inherits from `float`,
 
     # OR times:
 
-    eday('12:50') + eday('-0:05')
+    eday('25:50') + eday('-0:05')
+    # (25:50 translates into 1 day 1:50 AM)
 
 Negative times
 ---------------

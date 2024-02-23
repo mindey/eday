@@ -6,7 +6,7 @@ with open('README.rst', 'r', encoding='utf-8') as f:
 
 setup(
     name='eday',
-    version='1.0.3',
+    version='1.0.4',
     description='A package for converting between dates and epoch days',
     long_description=long_description,
     long_description_content_type='text/x-rst',

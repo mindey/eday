@@ -22,3 +22,7 @@ All notable changes to this project will be documented in this file.
 - [remove] _time_interval to render time intervals in commonly used units.
 - [add] prepending dates with 'N' allows to get days from year 0001-01-01 as zero.
 - [remove] python-dateutil for Python3.
+
+## [1.0.4] - 2024-02-23
+- [add] Allow instantiating times +HH:MM:SS.ss+, even when HH>24, MM>60, SS>60.
+  (useful for time interval computations between times specified beyond midnight.)
