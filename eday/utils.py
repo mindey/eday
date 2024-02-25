@@ -46,24 +46,15 @@ def _time_to_date(arg: str) -> Tuple[str, bool, bool, bool]:
         is_iso = False
 
     # If the input string ends with a time expression (HH:MM, HH:MM:SS, or HH:MM:SS.microseconds)
-    if re.match(r'^\d+:\d{2}(:\d{2}(\.\d+)?)?$', arg):
-        if arg.find(':') == 1:
-            arg = '0' + arg
+    match = re.match(r'^([-+]?\d+(?:\.\d+)?):([-+]?\d+(?:\.\d+)?)(?::([-+]?\d+(?:\.\d+)?))?$', arg)
 
-        match = re.match(r'^(\d+):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$', arg)
-
-        HH = int(match.group(1))
-        MM = int(match.group(2))
-        SS = int(match.group(3)) if match.group(3) is not None else 0
-
-        if match.group(4) is not None:
-            SS += float("0." + match.group(4))
+    if match:
+        HH = float(match.group(1))
+        MM = float(match.group(2))
+        SS = float(match.group(3)) if match.group(3) is not None else 0.
 
         days = (HH * 3600 + MM * 60 + SS)/86400.
-
         arg = (datetime.datetime(1970,1,1)+datetime.timedelta(days=days)).isoformat() + '+00:00'
-
         return (arg, negative, is_iso, bce_zero)
 
     return (arg, negative, is_iso, bce_zero)
-

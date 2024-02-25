@@ -66,6 +66,9 @@ The package presents a converter aliased to package, that inherits from `float`,
     # Subtract or add times:
     eday('25:50') + eday('-0:05')  # (25:50 translates into 25 hours 50 minutes)
 
+    # Use unrestricted amounts
+    eday('100:100:100.1') # (translates to 100 hours, 100 minutes, 100.1 seconds)
+
 
 Negative times (experimental)
 -----------------------------
