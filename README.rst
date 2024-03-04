@@ -124,7 +124,17 @@ Linux users can also use the following `zsh <https://ohmyz.sh/>`_ functions dire
      echo $(date -u +"%Y-%m-%dT%H:%M:%S.%N%:z" -d "@$second")
     }
 
-To use these functions, save them in a file named `eday.sh` and source the file to make the functions available in your terminal session.
+To use these functions, save them in a file named `eday.sh` and source the file to make the functions available in your terminal session, or add ``/usr/local/bin/eday``:
+
+.. code-block:: bash
+
+    #!/bin/bash
+    function eday { # eday now
+     local n=$((($(date +%s%9N)/864)*1000))
+     local day=${n:0:-14}; local hour=${n:(-14)}
+     echo $day.${hour:0:${1-11}} # $1: precision
+    }
+    eday
 
 License
 -------
