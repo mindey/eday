@@ -25,6 +25,8 @@ Example usage:
 
     eday.to_date(<float>) # -> datetime.datetime
 
+    eday.now() # -> eday <float>
+
 Advanced Usage
 --------------
 
@@ -76,19 +78,15 @@ If you don't need these extra features, and just need to convert dates to/from e
     def e2d(eday): # datetime.datetime -> float
         return datetime.datetime.utcfromtimestamp(eday * 86400.)
 
+    def eday():
+        return d2e(datetime.datetime.utcnow())
+
 Using Epoch Days from Terminal
 -------------------------------
 
 Linux users can also use the following `zsh <https://ohmyz.sh/>`_ functions directly from the terminal to compute epoch days.
 
 .. code-block:: bash
-
-    #!/bin/zsh
-    function eday { # eday now
-     local n=$((($(date +%s%9N)/864)*1000))
-     local day=${n:0:-14}; local hour=${n:(-14)}
-     echo $day.${hour:0:${1-11}} # $1: precision
-    }
 
     function d2e { # isodate -> eday
      local n=$((($(date -u --date="$1" +%s%9N)/864)*1000))
