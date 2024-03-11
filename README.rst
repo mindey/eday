@@ -1,15 +1,7 @@
 eday
 ====
 
-The `eday` package provides functions for converting between dates and epoch days (days since January 1, 1970, UTC).
-
-The package provides three main functions:
-
-1. ``from_date``: Converts a date object or ISO format string to an equivalent number of days since the epoch.
-2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
-3. ``now``: Returns the current UTC time as a number of days since the epoch.
-
-The ``eday`` inherits from ``float``, and adds a few conveniences for common time/date calculations (see `Advanced Usage <#advanced-usage>`_).
+The `eday` package provides functions for converting between dates and epoch days (see `About <#about>`_ section).
 
 Installation
 ------------
@@ -59,6 +51,16 @@ The package presents a converter aliased to package, that inherits from `float`,
 
     # Use unrestricted amounts
     eday('100:100:100.1') # (translates to 100 hours, 100 minutes, 100.1 seconds)
+
+About
+-----
+The package provides three main functions:
+
+1. ``from_date``: Converts a date object or ISO format string to an equivalent number of days since the epoch.
+2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
+3. ``now``: Returns the current UTC time as a number of days since the epoch.
+
+The ``eday`` inherits from ``float``, and adds a few conveniences for common time/date calculations (see `Advanced Usage <#advanced-usage>`_).
 
 Using Epoch Days without this package (Python2 & Python3)
 ---------------------------------------------------------
