@@ -45,14 +45,11 @@ The package presents a converter aliased to package, that inherits from `float`,
     # Subtract or add dates:
     eday('2024-10-04') - eday.now()
 
-    # Create from number of hours, minutes, seconds
-    eday('198:30:15.445') # (translates as 198 hours, 30 minutes, 15.445 seconds)
-
     # Subtract or add times:
     eday('25:50') + eday('-0:05')  # (25:50 translates into 25 hours 50 minutes)
 
-    # Use unrestricted amounts
-    eday('100:100:100.1') # (translates to 100 hours, 100 minutes, 100.1 seconds)
+    # Create from unrestricted float numbers of hours, minutes, seconds
+    eday(10.3) + eday('100.5:100.15:100.125') # (10.3 days, 100.5 hours, 100.15 minutes, 100.125 seconds)
 
 About
 -----
