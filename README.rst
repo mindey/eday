@@ -1,9 +1,15 @@
 eday
 ====
 
-The `eday` package provides functions for converting between dates and epoch days.
+The `eday` package provides functions for converting between dates and epoch days (days since January 1, 1970, UTC).
 
-Epoch days represent the number of days since the Unix epoch (January 1, 1970, UTC).
+The package provides three main functions:
+
+1. ``from_date``: Converts a date object or ISO format string to an equivalent number of days since the epoch.
+2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
+3. ``now``: Returns the current UTC time as a number of days since the epoch.
+
+The ``eday`` inherits from ``float``, and adds a few conveniences for common time/date calculations (see `Advanced Usage <#advanced-usage>`_).
 
 Installation
 ------------
@@ -14,36 +20,21 @@ You can install `eday` using pip:
 
     pip install eday
 
-Usage
------
-
-The package provides three main functions:
-
-1. `from_date`: Converts a date object or ISO format string to an equivalent number of days since the epoch.
-2. `to_date`: Converts a number of days since the epoch to a datetime object in UTC.
-3. `now`: Returns the current UTC time as a number of days since the epoch.
+Simple Usage
+------------
 
 Example usage:
 
 .. code:: python
 
     import eday
-    import datetime
 
-    date = datetime.datetime(1968, 12, 31)
+    eday.from_date(<datetime.datetime>) # -> float
 
-    # Convert a date to epoch days
-    eday.from_date(date) # float
+    eday.to_date(<float>) # -> datetime.datetime
 
-    # Convert epoch days to a datetime object
-    eday.to_date(20000) # datetime
-
-    # Get the current UTC time in epoch days
-    eday.now()
-
-
-Shorthands
-----------
+Advanced Usage
+--------------
 
 The package presents a converter aliased to package, that inherits from `float`, making the computations of date differences easier.
 
@@ -69,35 +60,19 @@ The package presents a converter aliased to package, that inherits from `float`,
     # Use unrestricted amounts
     eday('100:100:100.1') # (translates to 100 hours, 100 minutes, 100.1 seconds)
 
-
-Negative times (experimental)
------------------------------
-
-Adding minus symbol ('-') and/or ('N') symbol to ISOString works currently like so:
+Using Epoch Days without this package (Python2 & Python3)
+---------------------------------------------------------
+If you don't need these extra features, and just need to convert dates to/from edays, you could simply use:
 
 .. code:: python
 
-    # If "-" is prepended, then days since 1970-01-01 get mirrored around 1970-01-01
-    eday('-2024-10-04') # negative number of days in [1970-01-01, 2024-10-04]
+    import time, datetime
 
-    # If "N" is added, then number of days since 0001-01-01 are returned.
-    eday('N2024-10-04') # positive number of days in [0001-01-01, 2024-10-04]
+    def d2e(date): # datetime.datetime -> float
+        return time.mktime(date.utctimetuple()) / 86400.
 
-    # If "-" and "N' is added, then days sine 0001-01-01 get mirrored around 0001-01-01
-    eday('-N2024-10-04') # negative number of days in [-2024-10-04, 1970-01-01]
-
-However, this behavior is experimental, and may be updated in the future.
-
-Limitations
------------
-
-When using "N" prefix, negative days are mirrored, so B.C.E. seasons get inversed. This is something that in the future version we might fix, but it is not in the short term horizon.
-
-
-Compatibility
---------------
-
-The package is compatible with Python 2 (up to version 1.0.1) and Python 3 (from version 1.0.2). Under Python2, it relies on the `dateutil` module for Python 2 compatibility when parsing ISO format strings.
+    def e2d(eday): # datetime.datetime -> float
+        return datetime.datetime.utcfromtimestamp(eday * 86400.)
 
 Using Epoch Days from Terminal
 -------------------------------
@@ -135,6 +110,11 @@ To use these functions, save them in a file named `eday.sh` and source the file 
      echo $day.${hour:0:${1-11}} # $1: precision
     }
     eday
+
+Compatibility
+--------------
+
+The package is compatible with Python 2 (up to version 1.0.1) and Python 3 (from version 1.0.2). Under Python2, it relies on the `dateutil` module for Python 2 compatibility when parsing ISO format strings.
 
 License
 -------
