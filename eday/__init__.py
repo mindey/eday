@@ -31,37 +31,36 @@ class Eday(float):
 
         Handles times as if starting from 1970-01-01 if no years are provided.
         """
-        negative = False
-        if arg.startswith('-'):
-            negative = True
+        negative = arg.startswith('-')
+        if negative:
             arg = arg[1:]
 
         try:
-            # If the input string is in ISO format, return it
+            # Check if the input string is in ISO format
             datetime.datetime.fromisoformat(arg)
-            is_iso = True
-            return (arg, negative, is_iso)
+            return arg, negative
         except ValueError:
-            is_iso = False
+            # Input string is not in ISO format
+            pass
 
-        # If the input string is time expression (HH:MM, HH:MM:SS, or HH:MM:SS.microseconds)
+        # Handle time expressions (HH:MM, HH:MM:SS, or HH:MM:SS.microseconds)
         match = re.match(
             r'^([-+]?\d+(?:\.\d+)?):([-+]?\d+(?:\.\d+)?)(?::([-+]?\d+(?:\.\d+)?))?$', arg)
         if match:
             hours = float(match.group(1))
             minutes = float(match.group(2))
-            seconds = float(match.group(3)) if match.group(3) is not None else 0.
+            seconds = float(match.group(3) or 0.)
 
             days = (hours * 3600 + minutes * 60 + seconds) / SECONDS_IN_DAY
             arg = (datetime.datetime(1970, 1, 1) + datetime.timedelta(days=days)).isoformat() + '+00:00'
-            return (arg, negative, is_iso)
+            return arg, negative
 
-        return (arg, negative, is_iso)
+        return arg, negative
 
     @classmethod
     def now(cls):
-        """Return the Eday instance with current time."""
-        return Eday(datetime.datetime.now(datetime.timezone.utc))
+        """Return an Eday instance with the current time."""
+        return cls(datetime.datetime.now(datetime.timezone.utc))
 
     def __new__(cls, arg):
         if isinstance(arg, (int, float)):
@@ -73,21 +72,20 @@ class Eday(float):
 
         obj = super().__new__(cls, day)
 
-        # In range 0001-01-01 ~ 9999-12-31, provide Gregorian date in __repr__.
+        # Provide Gregorian date in __repr__ if within range
         if MIN_DATETIME <= day <= MAX_DATETIME:
             date = cls.to_date(day)
             setattr(obj, '_converted_from', str(date))
         else:
             setattr(obj, '_converted_from', str(arg))
+
         return obj
 
     def __repr__(self):
         """Return the string representation of the Eday instance."""
         if hasattr(self, '_converted_from'):
-            # For Python versions < 3.6 not using f-strings
             return '%s <%s>' % (float(self), self._converted_from)
         return '%s' % float(self)
-
 
     @classmethod
     def from_date(cls, date: Union[str, datetime.datetime]) -> float:
@@ -103,7 +101,7 @@ class Eday(float):
         is_str = isinstance(date, str)
 
         if is_str:
-            date, negative, is_iso = cls._time_to_date(date)
+            date, negative = cls._time_to_date(date)
             date = datetime.datetime.fromisoformat(date)
 
         if date.tzinfo is None:
@@ -112,14 +110,10 @@ class Eday(float):
         seconds = cls._timestamp(date) / SECONDS_IN_DAY
 
         if is_str and negative:
-            # We use minus sign ('-') for "before epoch" (before 1970-01-01 0:00 UTC) dates.
+            # This is for convenience of time calculations, e.g.: eday('-1:15') + eday('1:15') = 0
+            # It applies to date strings too, e.g.: eday('-1970-01-10') = 0 - eday('1970-01-10')
+            # The '-' does not mean BCE (before comon era). We'll use a different symbol for that.
             return -seconds
-            # This is very convenient for time calculations, e.g.:
-            #    eday('-1:15') + eday('1:15') = 0
-            # But may be confusing for dates:
-            #    eday('-1970-01-10') = 0 - eday('1970-01-10')
-            # Because some people may think '-' has to mean BCE (before comon era).
-            # We'll use a different symbol in the future to represent BCE dates.
 
         return seconds
 
