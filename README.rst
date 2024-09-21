@@ -64,6 +64,9 @@ The package presents a converter aliased to package, that inherits from `float`,
     # Create from unrestricted float numbers of hours, minutes, seconds
     eday('100.5:100.15:100.125') # (100.5 hours, 100.15 minutes, 100.125 seconds)
 
+    # Outside range [0001-01-01, 9999-12-31], represented with juliandate.to_gregorian()
+    eday(-2440587.5) # -2440587.5 <-4713-11-24 12:00:0.000000 UTC>
+
 
 Using Epoch Days without this package (Python2 & Python3)
 ---------------------------------------------------------

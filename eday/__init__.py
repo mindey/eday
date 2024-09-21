@@ -3,13 +3,16 @@ Module for converting between dates and epoch days.
 
 This module provides functions for converting between dates and epoch days.
 """
+import re
 import datetime
 from typing import Union
-import re
+
+import juliandate as jd
 
 SECONDS_IN_DAY = 86400.0
 MIN_DATETIME = -719162.0
 MAX_DATETIME = 2932896.0
+JDAYS_ATZERO = 2440587.5 # Julian Days at Eday(0), 1970-01-01 0:00 UTC
 
 class Eday(float):
     """
@@ -25,9 +28,9 @@ class Eday(float):
         return (date - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds()
 
     @staticmethod
-    def _time_to_date(arg: str):
+    def _parse_time_expression(arg: str):
         """
-        Convert a time expression or ISO format string to a date.
+        Convert time expressions (HH:MM, HH:MM:SS) into an ISO 8601 string.
 
         Handles times as if starting from 1970-01-01 if no years are provided.
         """
@@ -36,11 +39,10 @@ class Eday(float):
             arg = arg[1:]
 
         try:
-            # Check if the input string is in ISO format
+            # Return, if it is already an ISO 8601 string.
             datetime.datetime.fromisoformat(arg)
             return arg, negative
         except ValueError:
-            # Input string is not in ISO format
             pass
 
         # Handle time expressions (HH:MM, HH:MM:SS, or HH:MM:SS.microseconds)
@@ -58,7 +60,7 @@ class Eday(float):
         return arg, negative
 
     @classmethod
-    def now(cls):
+    def now(cls) -> float:
         """Return an Eday instance with the current time."""
         return cls(datetime.datetime.now(datetime.timezone.utc))
 
@@ -72,20 +74,17 @@ class Eday(float):
 
         obj = super().__new__(cls, day)
 
-        # Provide Gregorian date in __repr__ if within range
-        if MIN_DATETIME <= day <= MAX_DATETIME:
-            date = cls.to_date(day)
-            setattr(obj, '_converted_from', str(date))
-        else:
-            setattr(obj, '_converted_from', str(arg))
-
         return obj
 
     def __repr__(self):
-        """Return the string representation of the Eday instance."""
-        if hasattr(self, '_converted_from'):
-            return '%s <%s>' % (float(self), self._converted_from)
-        return '%s' % float(self)
+        """Display epoch days and corresponding date if in valid range."""
+        if MIN_DATETIME <= self <= MAX_DATETIME:
+            date = self.to_date(self)
+        else:
+            dt = jd.to_gregorian(self + JDAYS_ATZERO)
+            ds = dt[5] + dt[6] / 10e6
+            date = f"{dt[0]}-{dt[1]:02d}-{dt[2]:02d} {dt[3]:02d}:{dt[4]:02d}:{ds:.6f} UTC"
+        return '%s <%s>' % (float(self), date)
 
     @classmethod
     def from_date(cls, date: Union[str, datetime.datetime]) -> float:
@@ -101,21 +100,21 @@ class Eday(float):
         is_str = isinstance(date, str)
 
         if is_str:
-            date, negative = cls._time_to_date(date)
+            date, negative = cls._parse_time_expression(date)
             date = datetime.datetime.fromisoformat(date)
 
         if date.tzinfo is None:
             date = date.replace(tzinfo=datetime.timezone.utc)
 
-        seconds = cls._timestamp(date) / SECONDS_IN_DAY
+        days = cls._timestamp(date) / SECONDS_IN_DAY
 
         if is_str and negative:
             # This is for convenience of time calculations, e.g.: eday('-1:15') + eday('1:15') = 0
             # It applies to date strings too, e.g.: eday('-1970-01-10') = 0 - eday('1970-01-10')
-            # The '-' does not mean BCE (before comon era). We'll use a different symbol for that.
-            return -seconds
+            # This is in conflict with ISO 8601, in that it is not meant to represent BCE dates.
+            return -days
 
-        return seconds
+        return days
 
     @classmethod
     def to_date(cls, eday: Union[str, int, float]) -> datetime.datetime:
@@ -130,11 +129,10 @@ class Eday(float):
         """
         eday = float(eday)
         seconds = eday * SECONDS_IN_DAY
-        return datetime.datetime.utcfromtimestamp(seconds).replace(
-            tzinfo=datetime.timezone.utc
-        )
+        return datetime.datetime.utcfromtimestamp(seconds).replace(tzinfo=datetime.timezone.utc)
 
     def __add__(self, other):
+        """Add epoch days."""
         if isinstance(other, (int, float)):
             return Eday(float(self) + other)
         elif isinstance(other, Eday):
@@ -143,12 +141,14 @@ class Eday(float):
             raise TypeError("Unsupported operand type for +")
 
     def __sub__(self, other):
+        """Subtract epoch days."""
         if isinstance(other, (int, float)):
             return Eday(float(self) - other)
         elif isinstance(other, Eday):
             return Eday(float(self) - float(other))
         else:
             raise TypeError("Unsupported operand type for -")
+
 
 # Override the module itself to make it callable
 import sys

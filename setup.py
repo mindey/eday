@@ -28,6 +28,6 @@ setup(
     ],
     keywords='epoch days date time datetime conversion utility',
     packages=find_packages(),
-    install_requires=[],
+    install_requires=['juliandate'],
     zip_safe=False,
 )
