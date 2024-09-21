@@ -1,11 +1,11 @@
 """
-Module providing functions for converting between dates and epoch days.
+Module for converting between dates and epoch days.
 
-This module includes functions for converting between dates and epoch days.
+This module provides functions for converting between dates and epoch days.
 """
-import re
 import datetime
 from typing import Union
+import re
 
 SECONDS_IN_DAY = 86400.0
 MIN_DATETIME = -719162.0
@@ -13,7 +13,7 @@ MAX_DATETIME = 2932896.0
 
 class Eday(float):
     """
-    Eday class for quick eday <-> date conversion.
+    Eday class for quick conversion between epoch days and dates.
     """
 
     @staticmethod
@@ -27,7 +27,9 @@ class Eday(float):
     @staticmethod
     def _time_to_date(arg: str):
         """
-        Handle times as if they were starting at 1970-01-01, if no years provided.
+        Convert a time expression or ISO format string to a date.
+
+        Handles times as if starting from 1970-01-01 if no years are provided.
         """
         negative = False
         if arg.startswith('-'):
@@ -51,14 +53,14 @@ class Eday(float):
             seconds = float(match.group(3)) if match.group(3) is not None else 0.
 
             days = (hours * 3600 + minutes * 60 + seconds) / SECONDS_IN_DAY
-            arg = (datetime.datetime(1970, 1, 1)
-                   + datetime.timedelta(days=days)).isoformat() + '+00:00'
+            arg = (datetime.datetime(1970, 1, 1) + datetime.timedelta(days=days)).isoformat() + '+00:00'
             return (arg, negative, is_iso)
 
         return (arg, negative, is_iso)
 
     @classmethod
     def now(cls):
+        """Return the Eday instance with current time."""
         return Eday(datetime.datetime.now(datetime.timezone.utc))
 
     def __new__(cls, arg):
@@ -80,6 +82,7 @@ class Eday(float):
         return obj
 
     def __repr__(self):
+        """Return the string representation of the Eday instance."""
         if hasattr(self, '_converted_from'):
             # For Python versions < 3.6 not using f-strings
             return '%s <%s>' % (float(self), self._converted_from)
@@ -89,7 +92,7 @@ class Eday(float):
     @classmethod
     def from_date(cls, date: Union[str, datetime.datetime]) -> float:
         """
-        Converts a date object or ISO format string to an equivalent number of days since the epoch.
+        Convert a date object or ISO format string to the number of days since the epoch.
 
         Parameters:
         date (str or datetime.datetime): The date to convert.
@@ -97,9 +100,9 @@ class Eday(float):
         Returns:
         float: The number of days since the epoch.
         """
-        is_str = False
-        if isinstance(date, str):
-            is_str = True
+        is_str = isinstance(date, str)
+
+        if is_str:
             date, negative, is_iso = cls._time_to_date(date)
             date = datetime.datetime.fromisoformat(date)
 
@@ -109,14 +112,21 @@ class Eday(float):
         seconds = cls._timestamp(date) / SECONDS_IN_DAY
 
         if is_str and negative:
+            # We use minus sign ('-') for "before epoch" (before 1970-01-01 0:00 UTC) dates.
             return -seconds
+            # This is very convenient for time calculations, e.g.:
+            #    eday('-1:15') + eday('1:15') = 0
+            # But may be confusing for dates:
+            #    eday('-1970-01-10') = 0 - eday('1970-01-10')
+            # Because some people may think '-' has to mean BCE (before comon era).
+            # We'll use a different symbol in the future to represent BCE dates.
 
         return seconds
 
     @classmethod
     def to_date(cls, eday: Union[str, int, float]) -> datetime.datetime:
         """
-        Converts a number of days since the epoch to a datetime object in UTC.
+        Convert a number of days since the epoch to a datetime object in UTC.
 
         Parameters:
         eday (str, int, or float): The number of days since the epoch.
