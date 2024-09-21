@@ -27,6 +27,19 @@ Example usage:
 
     eday.now() # -> eday <float>
 
+
+About
+-----
+The package provides ``Eday`` class, that to represent "epoch day" (unix seconds in days). It inherits from ``float`` to provide it with conversions to and from datetime, as well as to display (when possible) and arithmetic operands (addition/subtraction) to enable simple quick date calculations using epoch days.
+
+The package exposes three main functions:
+
+1. ``from_date``: Converts a date object or ISO format string to an equivalent number of days since the epoch.
+2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
+3. ``now``: Returns the current UTC time as a number of days since the epoch.
+
+However, you can call the imported ``eday`` directly (see below) to use it with minimal typing to do time and calendar computations.
+
 Advanced Usage
 --------------
 
@@ -49,17 +62,8 @@ The package presents a converter aliased to package, that inherits from `float`,
     eday('25:50') + eday('-0:05')  # (25:50 translates into 25 hours 50 minutes)
 
     # Create from unrestricted float numbers of hours, minutes, seconds
-    eday(10.3) + eday('100.5:100.15:100.125') # (10.3 days, 100.5 hours, 100.15 minutes, 100.125 seconds)
+    eday('100.5:100.15:100.125') # (100.5 hours, 100.15 minutes, 100.125 seconds)
 
-About
------
-The package provides three main functions:
-
-1. ``from_date``: Converts a date object or ISO format string to an equivalent number of days since the epoch.
-2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
-3. ``now``: Returns the current UTC time as a number of days since the epoch.
-
-The ``eday`` inherits from ``float``, and adds a few conveniences for common time/date calculations (see `Advanced Usage <#advanced-usage>`_).
 
 Using Epoch Days without this package (Python2 & Python3)
 ---------------------------------------------------------
