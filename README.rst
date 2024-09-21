@@ -1,12 +1,12 @@
 eday
 ====
 
-The `eday` package provides functions for converting between dates and epoch days (see `About <#about>`_ section).
+The ``eday`` package provides functions for converting between dates and epoch days, a concept where dates are represented as the number of days since a reference epoch. This is useful for date arithmetic and conversion.
 
 Installation
 ------------
 
-You can install `eday` using pip:
+Install `eday` using pip:
 
 .. code:: bash
 
@@ -15,7 +15,7 @@ You can install `eday` using pip:
 Simple Usage
 ------------
 
-Example usage:
+Basic examples:
 
 .. code:: python
 
@@ -30,11 +30,11 @@ Example usage:
 
 About
 -----
-The package provides ``Eday`` class, that to represent "epoch day" (unix seconds in days). It inherits from ``float`` to provide it with conversions to and from datetime, as well as to display (when possible) and arithmetic operands (addition/subtraction) to enable simple quick date calculations using epoch days.
+The ``eday`` package features the ``Eday`` class, which represents "epoch days" (Unix seconds in days). It inherits from ``float``, providing conversions to/from datetime, and supports arithmetic operations for quick date calculations.
 
-The package exposes three main functions:
+Main Functions:
 
-1. ``from_date``: Converts a date object or ISO format string to an equivalent number of days since the epoch.
+1. ``from_date``: Converts a date object or ISO format string to the number of days since the epoch.
 2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
 3. ``now``: Returns the current UTC time as a number of days since the epoch.
 
@@ -43,7 +43,7 @@ However, you can call the imported ``eday`` directly (see below) to use it with 
 Advanced Usage
 --------------
 
-The package presents a converter aliased to package, that inherits from `float`, making the computations of date differences easier.
+The package allows advanced manipulations using ``eday`` objects:
 
 .. code:: python
 
@@ -55,21 +55,21 @@ The package presents a converter aliased to package, that inherits from `float`,
     # Create from ISO dates
     eday('2003-10-20 09:17:36.96-07:00')
 
-    # Subtract or add dates:
+    # Date arithmetic
     eday('2024-10-04') - eday.now()
 
-    # Subtract or add times:
+    # Time arithmetic
     eday('25:50') + eday('-0:05')  # (25:50 translates into 25 hours 50 minutes)
 
-    # Create from unrestricted float numbers of hours, minutes, seconds
+    # Unrestricted float numbers of hours, minutes, seconds
     eday('100.5:100.15:100.125') # (100.5 hours, 100.15 minutes, 100.125 seconds)
 
-    # Outside range [0001-01-01, 9999-12-31], represented with juliandate.to_gregorian()
+    # Out-of-range dates
     eday(-2440587.5) # -2440587.5 <-4713-11-24 12:00:0.000000 UTC>
 
 
-Using Epoch Days without this package (Python2 & Python3)
----------------------------------------------------------
+Using Epoch Days without this package (Python 2 & Python 3)
+-----------------------------------------------------------
 If you don't need these extra features, and just need to convert dates to/from edays, you could simply use:
 
 .. code:: python
@@ -88,7 +88,7 @@ If you don't need these extra features, and just need to convert dates to/from e
 Using Epoch Days from Terminal
 -------------------------------
 
-Linux users can also use the following `zsh <https://ohmyz.sh/>`_ functions directly from the terminal to compute epoch days.
+Linux users can use these ``zsh`` functions:
 
 .. code-block:: bash
 
@@ -103,7 +103,7 @@ Linux users can also use the following `zsh <https://ohmyz.sh/>`_ functions dire
      echo $(date -u +"%Y-%m-%dT%H:%M:%S.%N%:z" -d "@$second")
     }
 
-To use these functions, save them in a file named `eday.sh` and source the file to make the functions available in your terminal session, or add ``/usr/local/bin/eday``:
+Save these functions in ``eday.sh`` and source it or add to ``/usr/local/bin/eday``.
 
 .. code-block:: bash
 
@@ -118,7 +118,7 @@ To use these functions, save them in a file named `eday.sh` and source the file 
 Compatibility
 --------------
 
-The package is compatible with Python 2 (up to version 1.0.1) and Python 3 (from version 1.0.2). Under Python2, it relies on the `dateutil` module for Python 2 compatibility when parsing ISO format strings.
+The package is compatible with Python 2 (up to version 1.0.1) and Python 3 (from version 1.0.2). Python 2 users will need the ``dateutil`` module for parsing ISO format strings.
 
 License
 -------

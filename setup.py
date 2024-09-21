@@ -1,12 +1,14 @@
 import sys
 from setuptools import setup, find_packages
 
+# Read the contents of the README file
 with open('README.rst', 'r', encoding='utf-8') as f:
     long_description = f.read()
 
+# Setup configuration
 setup(
     name='eday',
-    version='1.0.7',
+    version='1.0.8',
     description='A package for converting between dates and epoch days',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -25,9 +27,15 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
     keywords='epoch days date time datetime conversion utility',
-    packages=find_packages(),
-    install_requires=['juliandate'],
+    packages=find_packages(exclude=[]),
+    install_requires=[
+        'juliandate',
+    ],
+    python_requires='>=3.5',
     zip_safe=False,
 )

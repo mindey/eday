@@ -41,7 +41,7 @@ class Eday(float):
         try:
             # Return, if it is already an ISO 8601 string.
             datetime.datetime.fromisoformat(arg)
-            return arg, negative
+            return arg, negative, True
         except ValueError:
             pass
 
@@ -55,9 +55,9 @@ class Eday(float):
 
             days = (hours * 3600 + minutes * 60 + seconds) / SECONDS_IN_DAY
             arg = (datetime.datetime(1970, 1, 1) + datetime.timedelta(days=days)).isoformat() + '+00:00'
-            return arg, negative
+            return arg, negative, False
 
-        return arg, negative
+        return arg, negative, False
 
     @classmethod
     def now(cls) -> float:
@@ -73,7 +73,6 @@ class Eday(float):
             raise TypeError("Unsupported type for Eday creation")
 
         obj = super().__new__(cls, day)
-
         return obj
 
     def __repr__(self):
@@ -100,8 +99,10 @@ class Eday(float):
         is_str = isinstance(date, str)
 
         if is_str:
-            date, negative = cls._parse_time_expression(date)
+            date, negative, is_iso = cls._parse_time_expression(date)
             date = datetime.datetime.fromisoformat(date)
+            # if [negatve and is_iso] OR [out of datetime range]:
+            #   use juliandate
 
         if date.tzinfo is None:
             date = date.replace(tzinfo=datetime.timezone.utc)
