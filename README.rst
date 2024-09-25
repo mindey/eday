@@ -12,20 +12,53 @@ Install `eday` using pip:
 
     pip install eday
 
-Simple Usage
-------------
+Principle
+---------
 
-Basic examples:
+Method signature.
 
 .. code:: python
 
     import eday
 
-    eday.from_date(<datetime.datetime>) # -> float
+    eday.from_date(<datetime.datetime> | '<ISO-STRING>' | '<TIME-STRING>' | <float|int>) # -> Eday <float>
 
     eday.to_date(<float>) # -> datetime.datetime
 
-    eday.now() # -> eday <float>
+    eday.now() # -> Eday <float>
+
+Usage
+------
+
+The imoprted ``eday`` can be called directly, and supports polymorphic creation from diferent types, and simple arithmetic.
+
+.. code:: python
+
+    import eday
+
+    # Create from float
+    eday(0) # 0.0 <1970-01-01 00:00:00+00:00>
+
+    # Passing large numbers displays date representations as well
+    eday(-2440587.5) # -2440587.5 <-4713-11-24 12:00:0.000000 UTC>
+
+    # Create from datetime.datetime
+    eday(datetime.datetime(1970,1,1))
+
+    # Create from ISO dates
+    eday('1969-12-31 17:00:00-07:00')
+
+    # Create from Time string
+    eday('-7:00') # 7 hours before "epoch 0"
+
+    # Unrestricted float numbers of hours, minutes, seconds can be used
+    eday('100.5:100.15:100.125') # (100.5 hours, 100.15 minutes, 100.125 seconds)
+
+    # Date arithmetic
+    eday('2024-10-04') - eday.now()
+
+    # Time arithmetic
+    eday('1:50') - eday('0:10:15.123')  # (1 hour 50 minutes - 10 minutes 15.123 seconds)
 
 
 About
@@ -38,34 +71,7 @@ Main Functions:
 2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
 3. ``now``: Returns the current UTC time as a number of days since the epoch.
 
-However, you can call the imported ``eday`` directly (see below) to use it with minimal typing to do time and calendar computations.
-
-Advanced Usage
---------------
-
-The package allows advanced manipulations using ``eday`` objects:
-
-.. code:: python
-
-    import eday
-
-    # Create from Epoch days
-    eday(12345.67890)
-
-    # Create from ISO dates
-    eday('2003-10-20 09:17:36.96-07:00')
-
-    # Date arithmetic
-    eday('2024-10-04') - eday.now()
-
-    # Time arithmetic
-    eday('25:50') + eday('-0:05')  # (25:50 translates into 25 hours 50 minutes)
-
-    # Unrestricted float numbers of hours, minutes, seconds
-    eday('100.5:100.15:100.125') # (100.5 hours, 100.15 minutes, 100.125 seconds)
-
-    # Out-of-range dates
-    eday(-2440587.5) # -2440587.5 <-4713-11-24 12:00:0.000000 UTC>
+However, you can call the imported ``eday`` directly (as shown in the examples above) to use it with minimal typing to do time and calendar computations.
 
 
 Using Epoch Days without this package (Python 2 & Python 3)
