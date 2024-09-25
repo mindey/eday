@@ -53,7 +53,7 @@ The imoprted ``eday`` can be called directly, and supports polymorphic creation 
     eday('1969-12-31 17:00:00-07:00')
 
     # Create from Time string
-    eday('-7:00') # 7 hours before "epoch 0"
+    eday('-7:00') # 7 hours before "epoch 0". NOTE: If '-' is before ISO 8610 string, it means BC (before common era.)
 
     # Unrestricted float numbers of hours, minutes, seconds can be used
     eday('100.5:100.15:100.125') # (100.5 hours, 100.15 minutes, 100.125 seconds)
