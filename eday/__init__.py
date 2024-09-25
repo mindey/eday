@@ -38,12 +38,13 @@ class Eday(float):
         if negative:
             arg = arg[1:]
 
-        try:
-            # Return, if it is already an ISO 8601 string.
-            datetime.datetime.fromisoformat(arg)
-            return arg, negative, True
-        except ValueError:
-            pass
+        if not negative:
+            try:
+                # Return, if it is already an ISO 8601 string supported by datetime.
+                dt = datetime.datetime.fromisoformat(arg)
+                return dt, negative, 'datetime'
+            except ValueError:
+                pass
 
         # Handle time expressions (HH:MM, HH:MM:SS, or HH:MM:SS.microseconds)
         match = re.match(
@@ -55,14 +56,28 @@ class Eday(float):
 
             days = (hours * 3600 + minutes * 60 + seconds) / SECONDS_IN_DAY
             arg = (datetime.datetime(1970, 1, 1) + datetime.timedelta(days=days)).isoformat() + '+00:00'
-            return arg, negative, False
+            return arg, negative, 'timestring'
 
-        return arg, negative, False
+        # Handle the other cases, like Julian dates..
+        try:
+            # Return, if it is already an ISO 8601 string unsupported by datetime.
+            iso_date = re.compile(
+                r'^(\d{1,})(?:-(\d{2}))?(?:-(\d{2}))?(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?)?(?:[ Z]|([+-]\d{2}:\d{2}))?$'
+            )
+            match = iso_date.match(arg)
+            return match, negative, 'juliandate'
+        except ValueError:
+            pass
+
+        return arg, negative, 'datestring'
 
     @classmethod
     def now(cls) -> float:
         """Return an Eday instance with the current time."""
         return cls(datetime.datetime.now(datetime.timezone.utc))
+
+    def to_jd(self) -> float:
+        return JDAYS_ATZERO+self
 
     def __new__(cls, arg):
         if isinstance(arg, (int, float)):
@@ -82,8 +97,13 @@ class Eday(float):
         else:
             dt = jd.to_gregorian(self + JDAYS_ATZERO)
             ds = dt[5] + dt[6] / 10e6
-            date = f"{dt[0]}-{dt[1]:02d}-{dt[2]:02d} {dt[3]:02d}:{dt[4]:02d}:{ds:.6f} UTC"
+            date = f"{dt[0]}-{dt[1]:02d}-{dt[2]:02d} {dt[3]:02d}:{dt[4]:02d}:{dt[5]:02d}.{dt[6]:06d}+00:00"
         return '%s <%s>' % (float(self), date)
+
+    @classmethod
+    def from_jd(cls, jday: Union[int, float]) -> float:
+        return cls(jday-JDAYS_ATZERO)
+
 
     @classmethod
     def from_date(cls, date: Union[str, datetime.datetime]) -> float:
@@ -96,20 +116,59 @@ class Eday(float):
         Returns:
         float: The number of days since the epoch.
         """
-        is_str = isinstance(date, str)
+        negative = False
 
-        if is_str:
-            date, negative, is_iso = cls._parse_time_expression(date)
-            date = datetime.datetime.fromisoformat(date)
-            # if [negatve and is_iso] OR [out of datetime range]:
-            #   use juliandate
+        if isinstance(date, datetime.datetime):
+            pass
+
+        elif isinstance(date, str):
+
+            result, negative, kind = cls._parse_time_expression(date)
+
+            if kind == 'datetime':
+                date = result
+
+            elif kind == 'juliandate':
+                # it means we have got the extended ISO 8601 string, unsupported by datetime.datetime, but supported by juliandate
+                year, month, day, hour, minute, second, fraction, tz = result.groups()
+
+
+                if fraction is not None and isinstance(fraction, str):
+                    millis = fraction[:6] + '.' + fraction[6:]
+                else:
+                    millis = 0
+
+                if tz is None:
+                    tz = '+00:00'
+
+                if negative:
+                    year = -int(year)
+
+                timetuple = (int(year), int(month), int(day), int(hour),
+                              int(minute), int(second), float(millis))
+
+                # Figuring out timezone offset to julian date, if it was provided in generic
+                O = cls._timestamp(datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc))
+                X = cls._timestamp(datetime.datetime.fromisoformat('1970-01-01T00:00:00'+tz))
+                tzoffset = (X - O) / 86400
+
+                print(timetuple)
+                jday = jd.from_gregorian(*timetuple) + tzoffset
+                eday = jday - JDAYS_ATZERO
+
+                return eday
+
+            elif kind == 'timestring':
+                date = datetime.datetime.fromisoformat(result)
+            else:
+                raise ValueError
 
         if date.tzinfo is None:
             date = date.replace(tzinfo=datetime.timezone.utc)
 
         days = cls._timestamp(date) / SECONDS_IN_DAY
 
-        if is_str and negative:
+        if negative:
             # This is for convenience of time calculations, e.g.: eday('-1:15') + eday('1:15') = 0
             # It applies to date strings too, e.g.: eday('-1970-01-10') = 0 - eday('1970-01-10')
             # This is in conflict with ISO 8601, in that it is not meant to represent BCE dates.
@@ -136,26 +195,21 @@ class Eday(float):
         """Add epoch days."""
         if isinstance(other, (int, float)):
             return Eday(float(self) + other)
-        elif isinstance(other, Eday):
+        if isinstance(other, Eday):
             return Eday(float(self) + float(other))
-        else:
-            raise TypeError("Unsupported operand type for +")
+
+        raise TypeError("Unsupported operand type for +")
 
     def __sub__(self, other):
         """Subtract epoch days."""
         if isinstance(other, (int, float)):
             return Eday(float(self) - other)
-        elif isinstance(other, Eday):
+        if isinstance(other, Eday):
             return Eday(float(self) - float(other))
-        else:
-            raise TypeError("Unsupported operand type for -")
+
+        raise TypeError("Unsupported operand type for -")
 
 
 # Override the module itself to make it callable
 import sys
 sys.modules[__name__] = Eday
-
-# Expose main functions at module level for convenience
-from_date = Eday.from_date
-to_date = Eday.to_date
-now = Eday.now
