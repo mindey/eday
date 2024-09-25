@@ -27,52 +27,6 @@ class Eday(float):
         # For Python versions < 3.3
         return (date - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds()
 
-    @staticmethod
-    def _parse_time_expression(arg: str):
-        """
-        Convert time expressions (HH:MM, HH:MM:SS) into an ISO 8601 string.
-
-        Handles times as if starting from 1970-01-01 if no years are provided.
-        """
-
-        # The negative sign is handled only for time-only expressions and julian date expressions
-        negative = arg.startswith('-')
-        if negative:
-            arg = arg[1:]
-
-        if not negative:
-            try:
-                # Return, if it is already an ISO 8601 string supported by datetime.
-                dt = datetime.datetime.fromisoformat(arg)
-                return dt, negative, 'datetime'
-            except ValueError:
-                pass
-
-        # Handle time-only expressions (HH:MM[:SS[.ffffff]])
-        match = re.match(
-            r'^([-+]?\d+(?:\.\d+)?):([-+]?\d+(?:\.\d+)?)(?::([-+]?\d+(?:\.\d+)?))?$', arg)
-        if match:
-            hours = float(match.group(1))
-            minutes = float(match.group(2))
-            seconds = float(match.group(3) or 0.)
-
-            days = (hours * 3600 + minutes * 60 + seconds) / SECONDS_IN_DAY
-            arg = (datetime.datetime(1970, 1, 1) + datetime.timedelta(days=days)).isoformat() + '+00:00'
-            return arg, negative, 'timestring'
-
-        # Handle date strings with Julian dates
-        try:
-            # Return, if it is already an ISO 8601 string unsupported by datetime.
-            iso_date = re.compile(
-                r'^(\d{1,})(?:-(\d{2}))?(?:-(\d{2}))?(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?)?(?:[ Z]|([+-]\d{2}:\d{2}))?$'
-            )
-            match = iso_date.match(arg)
-            return match, negative, 'juliandate'
-        except ValueError:
-            pass
-
-        return arg, negative, 'datestring'
-
     @classmethod
     def now(cls) -> float:
         """Return an Eday instance with the current time."""
@@ -95,11 +49,11 @@ class Eday(float):
     def __repr__(self):
         """Display epoch days and corresponding date if in valid range."""
         if MIN_DATETIME <= self <= MAX_DATETIME:
-            date = self.to_date(self)
+            date = self.to_date(self).isoformat()
         else:
             dt = jd.to_gregorian(self + JDAYS_ATZERO)
             ds = dt[5] + dt[6] / 10e6
-            date = f"{dt[0]}-{dt[1]:02d}-{dt[2]:02d} {dt[3]:02d}:{dt[4]:02d}:{dt[5]:02d}.{dt[6]:06d}+00:00"
+            date = f"{dt[0]}-{dt[1]:02d}-{dt[2]:02d}T{dt[3]:02d}:{dt[4]:02d}:{dt[5]:02d}.{dt[6]:06d}+00:00"
         return '%s <%s>' % (float(self), date)
 
     @classmethod
@@ -117,45 +71,77 @@ class Eday(float):
 
         if isinstance(date, str):
 
-            result, negative, kind = cls._parse_time_expression(date)
+            # The negative sign is handled only for time-only expressions and julian date expressions
+            negative = date.startswith('-')
+            if negative:
+                date = date[1:]
 
-            if kind == 'datetime':
-                date = result
+            if not negative:
+                try:
+                    # Return, if it is already an ISO 8601 string supported by datetime.
+                    date = datetime.datetime.fromisoformat(date)
+                    return cls._timestamp(date) / SECONDS_IN_DAY
 
-            elif kind == 'juliandate':
-                # it means we have got the extended ISO 8601 string, unsupported by datetime.datetime, but supported by juliandate
-                year, month, day, hour, minute, second, fraction, tz = result.groups()
+                except ValueError:
+                    pass
 
+            # Handle time-only expressions (HH:MM[:SS[.ffffff]])
+            match = re.match(
+                r'^([-+]?\d+(?:\.\d+)?):([-+]?\d+(?:\.\d+)?)(?::([-+]?\d+(?:\.\d+)?))?$', date)
+            if match:
+                hours = float(match.group(1))
+                minutes = float(match.group(2))
+                seconds = float(match.group(3) or 0.)
 
-                if fraction is not None and isinstance(fraction, str):
-                    millis = fraction[:6] + '.' + fraction[6:]
-                else:
-                    millis = 0
+                days = (hours * 3600 + minutes * 60 + seconds) / SECONDS_IN_DAY
+                time_as_date = datetime.datetime(1970, 1, 1) + datetime.timedelta(days=days)
+                date = time_as_date.isoformat() + '+00:00'
 
-                if tz is None:
-                    tz = '+00:00'
+                days = cls._timestamp(time_as_date) / SECONDS_IN_DAY
 
                 if negative:
-                    year = -int(year)
+                    return -days
 
-                timetuple = (int(year), int(month), int(day), int(hour),
-                              int(minute), int(second), float(millis))
+                return days
 
-                # Figuring out timezone offset to julian date, if it was provided in generic
-                O = cls._timestamp(datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc))
-                X = cls._timestamp(datetime.datetime.fromisoformat('1970-01-01T00:00:00'+tz))
-                tzoffset = (X - O) / 86400
+            # Handle date strings with Julian dates
+            try:
+                iso_date = re.compile(
+                    r'^(\d{1,})(?:-(\d{2}))?(?:-(\d{2}))?(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?)?(?:[ Z]|([+-]\d{2}:\d{2}))?$'
+                )
+                result = iso_date.match(date)
+                if result:
+                    year, month, day, hour, minute, second, fraction, tz = result.groups()
 
-                print(timetuple)
-                jday = jd.from_gregorian(*timetuple) + tzoffset
-                eday = jday - JDAYS_ATZERO
+                    if fraction is not None and isinstance(fraction, str):
+                        millis = fraction[:6] + '.' + fraction[6:]
+                    else:
+                        millis = 0
 
-                return eday
+                    if tz is None:
+                        tz = '+00:00'
 
-            elif kind == 'timestring':
-                date = datetime.datetime.fromisoformat(result)
-            else:
-                raise ValueError
+                    if negative:
+                        year = -int(year)
+
+                    timetuple = (int(year), int(month or 1), int(day or 1), int(hour or 0),
+                                 int(minute or 0), int(second or 0), float(millis))
+
+                    # Figuring out timezone offset to Julian date, if it was provided in generic form
+                    O = cls._timestamp(datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc))
+                    X = cls._timestamp(datetime.datetime.fromisoformat('1970-01-01T00:00:00' + tz))
+                    tzoffset = (X - O) / SECONDS_IN_DAY
+
+                    jday = jd.from_gregorian(*timetuple) + tzoffset
+                    eday = jday - JDAYS_ATZERO
+
+                    return eday
+
+            except ValueError:
+                pass
+
+            raise ValueError(f"Unable to parse date string: {date}")
+
 
         if date.tzinfo is None:
             date = date.replace(tzinfo=datetime.timezone.utc)

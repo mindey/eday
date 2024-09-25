@@ -86,7 +86,7 @@ class TestEdays(unittest.TestCase):
     def test_repr(self):
         # Test representation of Eday object
         eday_obj = eday('2022-02-17')
-        self.assertEqual(repr(eday_obj), '19040.0 <2022-02-17 00:00:00+00:00>')
+        self.assertEqual(repr(eday_obj), '19040.0 <2022-02-17T00:00:00+00:00>')
 
 if __name__ == '__main__':
     unittest.main()
