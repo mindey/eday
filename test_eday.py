@@ -88,5 +88,18 @@ class TestEdays(unittest.TestCase):
         eday_obj = eday('2022-02-17')
         self.assertEqual(repr(eday_obj), '19040.0 <2022-02-17T00:00:00+00:00>')
 
+    def test_from_jd(self):
+        """Test conversion from Julian day."""
+        self.assertAlmostEqual(eday.from_jd(2459580.5), 18993.0, places=6)
+        self.assertAlmostEqual(eday.from_jd(2460587.5), eday('2024-10-04'))
+        self.assertAlmostEqual(eday.from_jd(2440587.5), 0.0, places=6)
+
+    def test_to_jd(self):
+        """Test converting epoch days to Julian day."""
+        self.assertAlmostEqual(eday.to_jd(18993.0), 2459580.5, places=6)
+        self.assertAlmostEqual(eday.to_jd(0.0), 2440587.5, places=6)
+        self.assertAlmostEqual(eday.to_jd(-2440587.5), 0.0, places=6)
+
+
 if __name__ == '__main__':
     unittest.main()

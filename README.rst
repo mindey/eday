@@ -21,11 +21,15 @@ Method signature.
 
     import eday
 
-    eday.from_date(<datetime.datetime> | '<ISO-STRING>' | '<TIME-STRING>' | <float|int>) # -> Eday <float>
+    eday(<datetime.datetime> | '<ISO-STRING>' | '<TIME-STRING>' | <float|int>) # -> Eday <float>
 
-    eday.to_date(<float>) # -> datetime.datetime
+    eday.from_jd(<float>) # -> Eday <float>
 
     eday.now() # -> Eday <float>
+
+    eday.to_date() # -> datetime.datetime
+
+    eday.to_jd() # -> <float> (Julian day)
 
 Usage
 ------
@@ -54,11 +58,17 @@ The imoprted ``eday`` can be called directly, and supports polymorphic creation 
     # Unrestricted float numbers of hours, minutes, seconds can be used
     eday('100.5:100.15:100.125') # (100.5 hours, 100.15 minutes, 100.125 seconds)
 
+    # Create from Julian days:
+    eday.from_jd(2459580.5) # 18993.0 <2022-01-01T00:00:00+00:00>
+
     # Date arithmetic
     eday('2024-10-04') - eday.now()
 
     # Time arithmetic
     eday('1:50') - eday('0:10:15.123')  # (1 hour 50 minutes - 10 minutes 15.123 seconds)
+
+    # Convert to Julian day
+    eday('2024-10-04').to_jd() # 2460587.5
 
 
 About
@@ -68,8 +78,13 @@ The ``eday`` package features the ``Eday`` class, which represents "epoch days" 
 Main Functions:
 
 1. ``from_date``: Converts a date object or ISO format string to the number of days since the epoch.
-2. ``to_date``: Converts a number of days since the epoch to a datetime object in UTC.
+2. ``from_jd``: Convets Julian day to number of days since the epoch.
 3. ``now``: Returns the current UTC time as a number of days since the epoch.
+
+Auxiliary Functions:
+
+4. ``to_date``: Converts Eday object to ``datetime.datetime`` if possible.
+5. ``to_jd``: Converts Eday object to Julian day.
 
 However, you can call the imported ``eday`` directly (as shown in the examples above) to use it with minimal typing to do time and calendar computations.
 
