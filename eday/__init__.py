@@ -33,7 +33,13 @@ class Eday(float):
         return cls(datetime.datetime.now(datetime.timezone.utc))
 
     def to_jd(self) -> float:
+        """Convert epoch days to a Julian days"""
         return JDAYS_ATZERO+self
+
+    def to_date(self) -> datetime.datetime:
+        """Convert epoch days to a UTC datetime object."""
+        seconds = self * SECONDS_IN_DAY
+        return datetime.datetime.utcfromtimestamp(seconds).replace(tzinfo=datetime.timezone.utc)
 
     def __new__(cls, arg):
         if isinstance(arg, (int, float)):
@@ -49,7 +55,7 @@ class Eday(float):
     def __repr__(self):
         """Display epoch days and corresponding date if in valid range."""
         if MIN_DATETIME <= self <= MAX_DATETIME:
-            date = self.to_date(self).isoformat()
+            date = self.to_date().isoformat()
         else:
             dt = jd.to_gregorian(self + JDAYS_ATZERO)
             ds = dt[5] + dt[6] / 10e6
@@ -149,19 +155,11 @@ class Eday(float):
         days = cls._timestamp(date) / SECONDS_IN_DAY
 
         if negative:
-            # This is for convenience of time calculations, e.g.: eday('-1:15') + eday('1:15') = 0
-            # It applies to date strings too, e.g.: eday('-1970-01-10') = 0 - eday('1970-01-10')
-            # This is in conflict with ISO 8601, in that it is not meant to represent BCE dates.
+            # This is for convenience of time calculations, e.g.: eday('-1:15') as dates before Epoch zero.
+            # Note: adding minus sign to dates is treated as ISO 8601 dates BCE (before common era).
             return -days
 
         return days
-
-    @classmethod
-    def to_date(cls, eday: Union[str, int, float]) -> datetime.datetime:
-        """Convert epoch days to a UTC datetime object."""
-        eday = float(eday)
-        seconds = eday * SECONDS_IN_DAY
-        return datetime.datetime.utcfromtimestamp(seconds).replace(tzinfo=datetime.timezone.utc)
 
     def __add__(self, other):
         """Add epoch days."""
