@@ -62,6 +62,14 @@ class Eday(float):
             date = f"{dt[0]}-{dt[1]:02d}-{dt[2]:02d}T{dt[3]:02d}:{dt[4]:02d}:{dt[5]:02d}.{dt[6]:06d}+00:00"
         return '%s <%s>' % (float(self), date)
 
+    def format(self: float) -> str:
+        """Return decimal time formatted similar to isoformat."""
+        whole, fraction = (str(float(self)).split('.') + [''])[:2]
+        formatted_whole = "{:,}".format(int(whole))
+        fraction_padded = fraction.ljust(5, '0')
+        result = "{} T {}:{}:{}".format(formatted_whole, fraction_padded[0], fraction_padded[1:3], fraction_padded[3:5])
+        return result + (".{}".format(fraction[5:]) if len(fraction) > 5 else '')
+
     @classmethod
     def from_jd(cls, jday: Union[int, float]) -> float:
         """Convert Julian day to Eday."""

@@ -70,6 +70,9 @@ The imoprted ``eday`` can be called directly, and supports polymorphic creation 
     # Convert to Julian day
     eday('2024-10-04').to_jd() # 2460587.5
 
+    # Format as decimal unix day and time, for viewing as date and time string.
+    eday('2024-10-04 12:15').format() # 20,000 T 5:10:41.6666668
+
 
 About
 -----
@@ -85,6 +88,10 @@ Auxiliary Functions:
 
 4. ``to_date``: Converts Eday object to ``datetime.datetime`` if possible.
 5. ``to_jd``: Converts Eday object to Julian day.
+
+Miscellanous Functions:
+
+6. ``format``: Formats Eday as Decimal Unix day and time in a fashion similar to ``datetime.datetime.isoformat()``.
 
 However, you can call the imported ``eday`` directly (as shown in the examples above) to use it with minimal typing to do time and calendar computations.
 
