@@ -47,7 +47,11 @@ class Eday(float):
         elif isinstance(arg, (str, datetime.datetime)):
             day = cls.from_date(arg)
         else:
-            raise TypeError("Unsupported type for Eday creation")
+            try:
+                # Convertable to float?
+                day = float(arg)
+            except:
+                raise TypeError("Unsupported type for Eday creation")
 
         obj = super().__new__(cls, day)
         return obj
